@@ -1,59 +1,57 @@
-import { Application, Router, Request, Response } from "express";
+import { Router, Request, Response } from "express";
 const express = require("express");
 const router: Router = express.Router();
-import { db } from "../app";
+import { User } from "../models/User";
 interface UserInfoType {
   username: string;
   bio: string;
 }
 
-//route that tries to add a user's profile to the database
+//route that tries to add a user's profile to the database if it doesn't exist yet
 router.post("/addInfo", async (req: Request, res: Response) => {
   //handle db not being initialized yet
-  if (!db) {
-    console.log("DB not initialized yet!");
-    res.status(400).send("Error connecting to database");
-    return;
-  }
   const userInfo: UserInfoType = req.body;
   const newUserProfile: UserInfoType = {
     username: userInfo.username,
     bio: userInfo.bio,
   };
-  //attempt to add user info:
+  //attempt to add user info of a new user:
   try {
-    const addResult = await db.collection("users").insertOne(newUserProfile);
+    //attempt to create new user in model if doesn't exist, throw error if user is already there.
+    const newUser = new User({
+      username: newUserProfile.username,
+      bio: newUserProfile.bio,
+    });
 
-    addResult
-      ? res
-          .status(200)
-          .send("Successfully added user info of: " + newUserProfile.username)
-      : res.status(500).send("Error adding new user.");
+    await newUser.save();
+
+    res
+      .status(200)
+      .send("Successfully added user info of: " + newUserProfile.username);
   } catch (error: any) {
     console.error(error);
     res.status(400).send(error.message);
   }
 });
 
-//route that finds user and returns its profile in the database
+//route that finds user and returns its profile in the databaseif it exists
 router.get("/getInfo", async (req: Request, res: Response) => {
-  if (!db) {
-    console.log("DB not initialized yet!");
-    res.status(400).send("Error connecting to database");
-    return;
-  }
-
   const requestedUser = req.query.username;
   try {
     const userQuery = {
       username: requestedUser,
     };
-    const userProfileResult = await db.collection("users").findOne(userQuery);
-    userProfileResult
+    //attempt to find user in database
+    const userInfo = await User.findOne(userQuery);
+
+    //if the user exists, send its info back in response. If not, throw error saying user could not be found.
+    userInfo
       ? res.status(200).send({
-          user: userProfileResult,
+          user: userInfo,
         })
-      : res.status(400).send("Failed to find requested user");
+      : res
+          .status(404)
+          .send("Error: Could not find requested user: " + requestedUser);
   } catch (error: any) {
     console.error(error);
     res.status(400).send(error.message);
