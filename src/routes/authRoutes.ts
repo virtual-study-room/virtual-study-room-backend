@@ -47,15 +47,51 @@ router.get("/getInfo", async (req: Request, res: Response) => {
     //if the user exists, send its info back in response. If not, throw error saying user could not be found.
     userInfo
       ? res.status(200).send({
-          user: userInfo,
-        })
+        user: userInfo,
+      })
       : res
-          .status(404)
-          .send("Error: Could not find requested user: " + requestedUser);
+        .status(404)
+        .send("Error: Could not find requested user: " + requestedUser);
   } catch (error: any) {
     console.error(error);
     res.status(400).send(error.message);
   }
 });
+
+//route that tries to find user and updates details
+router.post("/updateInfo", async (req: Request, res: Response) => {
+  const userInfo: UserInfoType = req.body;
+  const updatedUserProfile: UserInfoType = {
+    username: userInfo.username,
+    bio: userInfo.bio,
+  };
+  try {
+    const userQuery = {
+      username: updatedUserProfile.username,
+    };
+    const oldUser = await User.findOne(userQuery);
+    if (oldUser) {
+      await User.updateOne(userQuery, { bio: updatedUserProfile.bio });
+      res
+        .status(200)
+        .send("Successfully updated user info of: " + updatedUserProfile.username);
+    }
+    else {
+      res
+        .status(404)
+        .send("Error: Could not find requested user: " + updatedUserProfile.username);
+    }
+
+  } catch (error: any) {
+    console.error(error);
+    res.status(400).send(error.message);
+  }
+
+});
+// // add modify and add delete, plus structure
+
+
+
+
 
 module.exports = router;
