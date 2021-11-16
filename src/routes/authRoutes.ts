@@ -90,6 +90,35 @@ router.post("/updateInfo", async (req: Request, res: Response) => {
   }
 
 });
+
+//route that deletes user data
+router.delete("/deleteInfo", async (req: Request, res: Response) => {
+  const requestedUser = req.query.username;
+  try {
+    const userQuery = {
+      username: requestedUser,
+    };
+    //attempt to find user in database
+    const userInfo = await User.findOne(userQuery);
+    if (userInfo) {
+      await userInfo.delete();
+      res
+        .status(200)
+        .send("Successfully deleted user info of: " + userQuery.username);
+    }
+    else {
+      res
+        .status(404)
+        .send("Error: Could not find requested user: " + userQuery.username);
+    }
+  } catch (error: any) {
+    console.error(error);
+    res.status(400).send(error.message);
+  }
+
+});
+
+
 // // add modify and add delete, plus structure
 
 
