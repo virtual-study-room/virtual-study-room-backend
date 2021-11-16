@@ -71,7 +71,9 @@ router.post("/updateInfo", async (req: Request, res: Response) => {
     };
     const oldUser = await User.findOne(userQuery);
     if (oldUser) {
-      await User.updateOne(userQuery, { bio: updatedUserProfile.bio });
+      //await User.updateOne(userQuery, { bio: updatedUserProfile.bio });
+      oldUser.bio = updatedUserProfile.bio;
+      await oldUser.save();
       res
         .status(200)
         .send("Successfully updated user info of: " + updatedUserProfile.username);
