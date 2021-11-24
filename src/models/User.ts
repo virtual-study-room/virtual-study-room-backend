@@ -2,7 +2,12 @@ const mongoose = require("mongoose");
 import { model, Schema, Model, Document } from "mongoose";
 
 //definition of what info a user should contain
-interface UserType extends Document {
+export interface UserType extends Document {
+  username: string;
+  bio?: string;
+}
+
+export interface UserInfoType {
   username: string;
   bio?: string;
 }

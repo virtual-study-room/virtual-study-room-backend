@@ -2,10 +2,7 @@ import { Router, Request, Response } from "express";
 const express = require("express");
 const router: Router = express.Router();
 import { User } from "../models/User";
-interface UserInfoType {
-  username: string;
-  bio: string;
-}
+import { UserInfoType } from "../models/User"
 
 //route that tries to add a user's profile to the database if it doesn't exist yet
 router.post("/addInfo", async (req: Request, res: Response) => {
@@ -118,11 +115,6 @@ router.delete("/deleteInfo", async (req: Request, res: Response) => {
 
 });
 
-
 // // add modify and add delete, plus structure
-
-
-
-
 
 module.exports = router;
