@@ -38,3 +38,17 @@ export function validateToken(
     res.status(400).send("Needs authorization header");
   }
 }
+
+export function isValidToken(token: string) {
+  if (!process.env.JWT_SECRET) return false;
+  try {
+    const result = jwt.verify(token, process.env.JWT_SECRET);
+    if (typeof result == "string") {
+      return false;
+    }
+    return true;
+  } catch (error: any) {
+    console.error(error);
+    return false;
+  }
+}

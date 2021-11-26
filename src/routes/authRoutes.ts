@@ -6,12 +6,24 @@ import * as jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { UserInfoType } from "../models/User";
 
-import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
+import {
+  AuthorizedRequest,
+  validateToken,
+  isValidToken,
+} from "../auth/jwt-auth";
 
 interface AuthRequestType {
   username: string;
   password: string;
 }
+
+router.post("/isValidToken", (req: Request, res: Response) => {
+  const userToken: string = req.body.authToken;
+  const tokenStatus = isValidToken(userToken);
+  tokenStatus
+    ? res.status(200).send("Is valid token")
+    : res.status(400).send("Invalid Token");
+});
 
 //route that tries to add a user's profile to the database if it doesn't exist yet
 router.post("/register", async (req: Request, res: Response) => {
