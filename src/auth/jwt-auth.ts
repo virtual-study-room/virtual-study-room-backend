@@ -44,11 +44,11 @@ export function isValidToken(token: string) {
   try {
     const result = jwt.verify(token, process.env.JWT_SECRET);
     if (typeof result == "string") {
-      return false;
+      return "";
     }
-    return true;
+    return result.username;
   } catch (error: any) {
     console.error(error);
-    return false;
+    return "";
   }
 }

@@ -19,9 +19,11 @@ interface AuthRequestType {
 
 router.post("/isValidToken", (req: Request, res: Response) => {
   const userToken: string = req.body.authToken;
-  const tokenStatus = isValidToken(userToken);
-  tokenStatus
-    ? res.status(200).send("Is valid token")
+  const tokenUser = isValidToken(userToken);
+  tokenUser
+    ? res.status(200).send({
+        username: tokenUser,
+      })
     : res.status(400).send("Invalid Token");
 });
 
