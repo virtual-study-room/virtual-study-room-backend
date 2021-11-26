@@ -24,7 +24,9 @@ router.post("/isValidToken", (req: Request, res: Response) => {
     ? res.status(200).send({
         username: tokenUser,
       })
-    : res.status(400).send("Invalid Token");
+    : res.status(400).send({
+        message: "Invalid Token",
+      });
 });
 
 //route that tries to add a user's profile to the database if it doesn't exist yet
@@ -44,11 +46,11 @@ router.post("/register", async (req: Request, res: Response) => {
 
   await newUser.save((err, user) => {
     if (!err) {
-      res
-        .status(200)
-        .send("Successfully registered: " + newUserProfile.username);
+      res.status(200).send({
+        message: "Successfully registered: " + newUserProfile.username,
+      });
     } else {
-      res.status(500).send(err.message);
+      res.status(500).send({ message: err.message });
     }
   });
 });
@@ -63,7 +65,7 @@ router.post("/login", async (req: Request, res: Response) => {
     });
 
     if (!userInfo) {
-      res.status(401).send("Invalid username");
+      res.status(401).send({ message: "Invalid username" });
       return;
     }
 
@@ -83,14 +85,14 @@ router.post("/login", async (req: Request, res: Response) => {
       });
       return;
     } else {
-      res.status(401).send("Invalid Password");
+      res.status(401).send({ message: "Invalid Password" });
       return;
     }
 
     //
   } catch (err: any) {
     console.error(err);
-    res.status(400).send(err.message);
+    res.status(400).send({ message: err.message });
   }
 });
 
@@ -115,7 +117,9 @@ router.get(
           })
         : res
             .status(404)
-            .send("Error: Could not find requested user: " + requestedUser);
+            .send({
+              message: "Error: Could not find requested user: " + requestedUser,
+            });
     } catch (error: any) {
       console.error(error);
       res.status(400).send(error.message);

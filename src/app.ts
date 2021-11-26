@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 import * as dotenv from "dotenv";
 const port = process.env.PORT || 8080;
 import { Application, Request, Response } from "express";
@@ -8,6 +9,8 @@ const app: Application = express();
 
 //parse body of requests as json
 app.use(express.json());
+//enable cors
+app.use(cors());
 
 //load in routes from our route files
 const authRoutes = require("./routes/authRoutes");
@@ -17,7 +20,9 @@ app.use("/", toDoRoutes);
 
 //default route to check server status
 app.get("/", (req: Request, res: Response) => {
-  res.send("Express server running!");
+  res.send({ message: "Express server running!" });
+  //instead of
+  //res.send("Express Server Running!");
 });
 
 //load in our dotenv
