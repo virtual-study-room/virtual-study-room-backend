@@ -101,7 +101,7 @@ router.get(
   "/getInfo",
   validateToken,
   async (req: AuthorizedRequest, res: Response) => {
-    const requestedUser = req.query.username;
+    const requestedUser = req.username;
     console.log(req.username);
     try {
       const userQuery = {
@@ -133,6 +133,13 @@ router.post(
   validateToken,
   async (req: AuthorizedRequest, res: Response) => {
     const userInfo: UserInfoType = req.body;
+    if(!req.username){
+      res
+      .status(400)
+      .send("Wrong authorization")
+      return
+    } //type safe, preventing it from being undefined
+    userInfo.username = req.username;
     const updatedUserProfile: UserInfoType = {
       username: userInfo.username,
       bio: userInfo.bio,
@@ -171,7 +178,7 @@ router.delete(
   "/deleteInfo",
   validateToken,
   async (req: AuthorizedRequest, res: Response) => {
-    const requestedUser = req.query.username;
+    const requestedUser = req.username;
     try {
       const userQuery = {
         username: requestedUser,

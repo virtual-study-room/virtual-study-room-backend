@@ -3,10 +3,18 @@ const express = require("express");
 const router: Router = express.Router();
 import { ToDo } from "../models/toDo";
 import { ToDoList } from "../models/toDo"
+import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
 
-router.post("/addToDo", async (req: Request, res: Response) => {
+router.post("/addToDo", validateToken, async (req: AuthorizedRequest, res: Response) => {
     //handle db not being initialized yet
     const ToDoInfo: ToDoList = req.body;
+    if(!req.username){
+        res
+        .status(400)
+        .send("Wrong authorization")
+        return
+      } //type safe, preventing it from being undefined
+    ToDoInfo.userID = req.username;
     const newToDoList: ToDoList = {
         userID: ToDoInfo.userID,
         title: ToDoInfo.title,
@@ -49,8 +57,8 @@ router.post("/addToDo", async (req: Request, res: Response) => {
     }
 });
 
-router.get("/getToDo", async (req: Request, res: Response) => {
-    const requestedListOwner = req.query.userID;
+router.get("/getToDo", validateToken, async (req: AuthorizedRequest, res: Response) => {
+    const requestedListOwner = req.username;
     try {
         const userQuery = {
             userID: requestedListOwner,
@@ -66,9 +74,9 @@ router.get("/getToDo", async (req: Request, res: Response) => {
         }
         else {
             //then now look through the titles
-            const requestedList = req.query.title;
+            const requestedList: ToDoList = req.body;
             const titleQuery = {
-                title: requestedList,
+                title: requestedList.title,
             };
             const ListTitle = await ToDo.findOne(titleQuery);
             if (!ListTitle) {
@@ -89,7 +97,112 @@ router.get("/getToDo", async (req: Request, res: Response) => {
         res.status(400).send(error.message);
     }
 
+});
 
+router.post("/editToDo", validateToken, async (req: AuthorizedRequest, res: Response) => {
+    const requestedList: ToDoList = req.body; // only put title, and items
+    if(!req.username){
+        res
+        .status(400)
+        .send("Wrong authorization")
+        return
+      } //type safe, preventing it from being undefined
+    requestedList.userID = req.username;
+    try {
+        const userQuery = {
+            userID: requestedList.userID,
+        };
+        //attempt to find user in database
+        const ListOwner = await ToDo.find(userQuery);
+
+        //if the user exists, send its info back in response. If not, throw error saying user could not be found.
+        if (ListOwner.length === 0) {
+            res
+                .status(404)
+                .send("Error: Could not find requested user: " + userQuery.userID);
+        }
+        else {
+            //then now look through the titles
+            const titleQuery = {
+                title: requestedList.title,
+            };
+            const pulledList = await ToDo.findOne(titleQuery);
+            
+            if (!pulledList) {
+                res
+                    .status(404)
+                    .send("Error: Could not find requested to do list: " + titleQuery.title);
+            }
+            else {
+                pulledList.items = requestedList.items;
+                await pulledList.save();
+                res
+                .status(200)
+                .send("Successfully updated user info of: " + req.username);
+                }
+            }
+        }
+    catch (error: any) {
+        console.error(error);
+        res.status(400).send(error.message);
+    }
+});
+
+router.delete("/trashToDo", validateToken, async (req: AuthorizedRequest, res: Response) => {
+    const requestedList: ToDoList = req.body; // only put title, run twice to delete
+    if(!req.username){
+        res
+        .status(400)
+        .send("Wrong authorization")
+        return
+      } //type safe, preventing it from being undefined
+    requestedList.userID = req.username;
+    try {
+        const userQuery = {
+            userID: requestedList.userID,
+        };
+        //attempt to find user in database
+        const ListOwner = await ToDo.find(userQuery);
+
+        //if the user exists, send its info back in response. If not, throw error saying user could not be found.
+        if (ListOwner.length === 0) {
+            res
+                .status(404)
+                .send("Error: Could not find requested user: " + userQuery.userID);
+        }
+        else {
+            //then now look through the titles
+            const titleQuery = {
+                title: requestedList.title,
+            };
+            const pulledList = await ToDo.findOne(titleQuery);
+            
+            if (!pulledList) {
+                res
+                    .status(404)
+                    .send("Error: Could not find requested to do list: " + titleQuery.title);
+            }
+            else {
+                if(pulledList.trashed === false){
+                    pulledList.trashed = true
+                await pulledList.save();
+                res
+                .status(200)
+                .send("Successfully put " + pulledList.title + " in the trash can for " + req.username);
+                }
+                else if(pulledList.trashed === true){
+                    await pulledList.delete();
+                    res
+                    .status(200)
+                    .send("Successfully trashed " + pulledList.title + " for " + req.username);
+                }
+            }
+            }
+        }
+    catch (error: any) {
+        console.error(error);
+        res.status(400).send(error.message);
+    }
 });
 
 module.exports = router;
