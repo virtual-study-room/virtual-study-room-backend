@@ -2,7 +2,9 @@ import { Router, Request, Response } from "express";
 const express = require("express");
 const router: Router = express.Router();
 import * as bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
 import { User } from "../models/User";
+import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
 
 interface UserInfoType {
   username: string;
@@ -41,11 +43,12 @@ router.post("/register", async (req: Request, res: Response) => {
 });
 
 router.post("/login", async (req: Request, res: Response) => {
+  //handle process not being setup
+  if (!process.env.JWT_SECRET) return;
   const requestInfo: AuthRequestType = req.body;
   try {
     const userInfo = await User.findOne({
       username: requestInfo.username,
-      //TODO: Fix any
     });
 
     if (!userInfo) {
@@ -59,11 +62,17 @@ router.post("/login", async (req: Request, res: Response) => {
       userInfo.get("password")
     );
 
-    if (!correctPassword) {
-      res.status(401).send("Invalid Password");
+    //generate JWT token if the password is valid
+    if (correctPassword) {
+      const payload = { username: userInfo.get("username") };
+      const options = { expiresIn: "2d" };
+      const token = jwt.sign(payload, process.env.JWT_SECRET, options);
+      res.status(200).send({
+        token: token,
+      });
       return;
     } else {
-      res.status(200).send("User signed in.");
+      res.status(401).send("Invalid Password");
       return;
     }
 
@@ -75,87 +84,101 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 //route that finds user and returns its profile in the databaseif it exists
-router.get("/getInfo", async (req: Request, res: Response) => {
-  const requestedUser = req.query.username;
-  try {
-    const userQuery = {
-      username: requestedUser,
-    };
-    //attempt to find user in database
-    const userInfo = await User.findOne(userQuery);
+router.get(
+  "/getInfo",
+  validateToken,
+  async (req: AuthorizedRequest, res: Response) => {
+    const requestedUser = req.query.username;
+    console.log(req.username);
+    try {
+      const userQuery = {
+        username: requestedUser,
+      };
+      //attempt to find user in database
+      const userInfo = await User.findOne(userQuery);
 
-    //if the user exists, send its info back in response. If not, throw error saying user could not be found.
-    userInfo
-      ? res.status(200).send({
-          user: userInfo,
-        })
-      : res
-          .status(404)
-          .send("Error: Could not find requested user: " + requestedUser);
-  } catch (error: any) {
-    console.error(error);
-    res.status(400).send(error.message);
+      //if the user exists, send its info back in response. If not, throw error saying user could not be found.
+      userInfo
+        ? res.status(200).send({
+            user: userInfo,
+          })
+        : res
+            .status(404)
+            .send("Error: Could not find requested user: " + requestedUser);
+    } catch (error: any) {
+      console.error(error);
+      res.status(400).send(error.message);
+    }
   }
-});
+);
 
 //route that tries to find user and updates details
-router.post("/updateInfo", async (req: Request, res: Response) => {
-  const userInfo: UserInfoType = req.body;
-  const updatedUserProfile: UserInfoType = {
-    username: userInfo.username,
-    bio: userInfo.bio,
-  };
-  try {
-    const userQuery = {
-      username: updatedUserProfile.username,
+router.post(
+  "/updateInfo",
+  validateToken,
+  async (req: AuthorizedRequest, res: Response) => {
+    const userInfo: UserInfoType = req.body;
+    const updatedUserProfile: UserInfoType = {
+      username: userInfo.username,
+      bio: userInfo.bio,
     };
-    const oldUser = await User.findOne(userQuery);
-    if (oldUser) {
-      //await User.updateOne(userQuery, { bio: updatedUserProfile.bio });
-      oldUser.bio = updatedUserProfile.bio;
-      await oldUser.save();
-      res
-        .status(200)
-        .send(
-          "Successfully updated user info of: " + updatedUserProfile.username
-        );
-    } else {
-      res
-        .status(404)
-        .send(
-          "Error: Could not find requested user: " + updatedUserProfile.username
-        );
+    try {
+      const userQuery = {
+        username: updatedUserProfile.username,
+      };
+      const oldUser = await User.findOne(userQuery);
+      if (oldUser) {
+        //await User.updateOne(userQuery, { bio: updatedUserProfile.bio });
+        oldUser.bio = updatedUserProfile.bio;
+        await oldUser.save();
+        res
+          .status(200)
+          .send(
+            "Successfully updated user info of: " + updatedUserProfile.username
+          );
+      } else {
+        res
+          .status(404)
+          .send(
+            "Error: Could not find requested user: " +
+              updatedUserProfile.username
+          );
+      }
+    } catch (error: any) {
+      console.error(error);
+      res.status(400).send(error.message);
     }
-  } catch (error: any) {
-    console.error(error);
-    res.status(400).send(error.message);
   }
-});
+);
 
 //route that deletes user data
-router.delete("/deleteInfo", async (req: Request, res: Response) => {
-  const requestedUser = req.query.username;
-  try {
-    const userQuery = {
-      username: requestedUser,
-    };
-    //attempt to find user in database
-    const userInfo = await User.findOne(userQuery);
-    if (userInfo) {
-      await userInfo.delete();
-      res
-        .status(200)
-        .send("Successfully deleted user info of: " + userQuery.username);
-    } else {
-      res
-        .status(404)
-        .send("Error: Could not find requested user: " + userQuery.username);
+router.delete(
+  "/deleteInfo",
+  validateToken,
+  async (req: AuthorizedRequest, res: Response) => {
+    const requestedUser = req.query.username;
+    try {
+      const userQuery = {
+        username: requestedUser,
+      };
+      //attempt to find user in database
+      const userInfo = await User.findOne(userQuery);
+      if (userInfo) {
+        await userInfo.delete();
+        res
+          .status(200)
+          .send("Successfully deleted user info of: " + userQuery.username);
+      } else {
+        res
+          .status(404)
+          .send("Error: Could not find requested user: " + userQuery.username);
+      }
+    } catch (error: any) {
+      console.error(error);
+      res.status(400).send(error.message);
     }
-  } catch (error: any) {
-    console.error(error);
-    res.status(400).send(error.message);
   }
-});
+);
 
 // // add modify and add delete, plus structure
 
