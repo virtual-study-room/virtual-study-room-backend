@@ -48,7 +48,7 @@ router.post("/addToDo", validateToken, async (req: AuthorizedRequest, res: Respo
 
             res
                 .status(200)
-                .send("Successfully added a to-do list for " + newToDoList.userID);
+                .send({message:"Successfully added a to-do list for " + newToDoList.userID});
         }
 
     } catch (error: any) {
@@ -138,7 +138,7 @@ router.post("/editToDo", validateToken, async (req: AuthorizedRequest, res: Resp
                 await pulledList.save();
                 res
                 .status(200)
-                .send("Successfully updated user info of: " + req.username);
+                .send({message: "Successfully updated user info of: " + req.username});
                 }
             }
         }
@@ -188,13 +188,13 @@ router.delete("/trashToDo", validateToken, async (req: AuthorizedRequest, res: R
                 await pulledList.save();
                 res
                 .status(200)
-                .send("Successfully put " + pulledList.title + " in the trash can for " + req.username);
+                .send({message: "Successfully put " + pulledList.title + " in the trash can for " + req.username});
                 }
                 else if(pulledList.trashed === true){
                     await pulledList.delete();
                     res
                     .status(200)
-                    .send("Successfully trashed " + pulledList.title + " for " + req.username);
+                    .send({message: "Successfully trashed " + pulledList.title + " for " + req.username});
                 }
             }
             }

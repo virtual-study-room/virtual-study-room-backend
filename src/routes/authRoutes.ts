@@ -155,8 +155,8 @@ router.post(
         await oldUser.save();
         res
           .status(200)
-          .send(
-            "Successfully updated user info of: " + updatedUserProfile.username
+          .send({message:
+            "Successfully updated user info of: " + updatedUserProfile.username}
           );
       } else {
         res
@@ -189,7 +189,7 @@ router.delete(
         await userInfo.delete();
         res
           .status(200)
-          .send("Successfully deleted user info of: " + userQuery.username);
+          .send({message:"Successfully deleted user info of: " + userQuery.username});
       } else {
         res
           .status(404)
