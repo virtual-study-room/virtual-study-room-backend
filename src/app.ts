@@ -8,7 +8,6 @@ const app: Application = express();
 
 //parse body of requests as json
 app.use(express.json());
-app.use(validateToken);
 
 //load in routes from our route files
 const authRoutes = require("./routes/authRoutes");
