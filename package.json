@@ -26,6 +26,7 @@
   },
   "scripts": {
     "start": "yarn tsc && node dist/app.js",
+    "start-server": "yarn tsc --init && yarn start",
     "build": "yarn tsc"
   }
 }
