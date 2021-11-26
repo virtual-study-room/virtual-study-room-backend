@@ -4,12 +4,9 @@ const router: Router = express.Router();
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { User } from "../models/User";
-import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
+import { UserInfoType } from "../models/User";
 
-interface UserInfoType {
-  username: string;
-  bio?: string;
-}
+import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
 
 interface AuthRequestType {
   username: string;

@@ -13,6 +13,8 @@ app.use(validateToken);
 //load in routes from our route files
 const authRoutes = require("./routes/authRoutes");
 app.use("/", authRoutes);
+const toDoRoutes = require("./routes/toDoRoutes");
+app.use("/", toDoRoutes);
 
 //default route to check server status
 app.get("/", (req: Request, res: Response) => {
