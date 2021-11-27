@@ -60,6 +60,7 @@ router.post("/login", async (req: Request, res: Response) => {
   if (!process.env.JWT_SECRET) return;
   const requestInfo: AuthRequestType = req.body;
   try {
+    //console.log(requestInfo);
     const userInfo = await User.findOne({
       username: requestInfo.username,
     });
@@ -115,11 +116,9 @@ router.get(
         ? res.status(200).send({
             user: userInfo,
           })
-        : res
-            .status(404)
-            .send({
-              message: "Error: Could not find requested user: " + requestedUser,
-            });
+        : res.status(404).send({
+            message: "Error: Could not find requested user: " + requestedUser,
+          });
     } catch (error: any) {
       console.error(error);
       res.status(400).send(error.message);
