@@ -138,7 +138,7 @@ router.post("/editToDo", validateToken, async (req: AuthorizedRequest, res: Resp
                 await pulledList.save();
                 res
                 .status(200)
-                .send({message: "Successfully updated user info of: " + req.username});
+                .send({message: "Successfully updated to do list for: " + req.username});
                 }
             }
         }
@@ -197,6 +197,55 @@ router.delete("/trashToDo", validateToken, async (req: AuthorizedRequest, res: R
                     .send({message: "Successfully trashed " + pulledList.title + " for " + req.username});
                 }
             }
+            }
+        }
+    catch (error: any) {
+        console.error(error);
+        res.status(400).send(error.message);
+    }
+});
+
+router.post("/restoreToDo", validateToken, async (req: AuthorizedRequest, res: Response) => {
+    const requestedList: ToDoList = req.body; // only put title
+    if(!req.username){
+        res
+        .status(400)
+        .send("Wrong authorization")
+        return
+      } //type safe, preventing it from being undefined
+    requestedList.userID = req.username;
+    try {
+        const userQuery = {
+            userID: requestedList.userID,
+        };
+        //attempt to find user in database
+        const ListOwner = await ToDo.find(userQuery);
+
+        //if the user exists, send its info back in response. If not, throw error saying user could not be found.
+        if (ListOwner.length === 0) {
+            res
+                .status(404)
+                .send("Error: Could not find requested user: " + userQuery.userID);
+        }
+        else {
+            //then now look through the titles
+            const titleQuery = {
+                title: requestedList.title,
+            };
+            const pulledList = await ToDo.findOne(titleQuery);
+            
+            if (!pulledList) {
+                res
+                    .status(404)
+                    .send("Error: Could not find requested to do list: " + titleQuery.title);
+            }
+            else {
+                pulledList.trashed = false;
+                await pulledList.save();
+                res
+                .status(200)
+                .send({message: "Successfully restored to do list for: " + req.username});
+                }
             }
         }
     catch (error: any) {
