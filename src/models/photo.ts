@@ -10,7 +10,7 @@ export interface PhotoListBody extends Document {
 
 export interface PhotoList {
     userID: string;
-    photos?: string[]
+    photos?: string[];
 }
 
 //mongoose's definition of our to list with the same shape as our interface

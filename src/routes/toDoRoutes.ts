@@ -80,6 +80,29 @@ router.get(
 );
 
 router.get(
+  "/getAllTrashedToDos",
+  validateToken,
+  async (req: AuthorizedRequest, res: Response) => {
+    const requestedListOwner = req.username;
+    try {
+      const userQuery = {
+        userID: requestedListOwner,
+        trashed: true,
+      };
+
+      //attempt to find user in database
+      const ListOwner = await ToDo.find(userQuery);
+
+      //get all lists associated with the user
+      res.status(200).send({ toDos: ListOwner });
+    } catch (error: any) {
+      console.error(error);
+      res.status(400).send(error.message);
+    }
+  }
+);
+
+router.get(
   "/getToDo",
   validateToken,
   async (req: AuthorizedRequest, res: Response) => {
