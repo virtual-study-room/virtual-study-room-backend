@@ -6,11 +6,13 @@ import * as bcrypt from "bcrypt";
 export interface UserType extends Document {
   username: string;
   bio?: string;
+  phone?: string;
 }
 
 export interface UserInfoType {
   username: string;
   bio?: string;
+  phone?: string;
 }
 
 //mongoose's definition of our user with the same shape as our interface
@@ -18,6 +20,7 @@ const UserSchema: Schema = new Schema({
   username: { type: String, required: true, unique: true },
   bio: { type: String, required: false },
   password: { type: String, required: true },
+  phone : {type: String, required: false},
 });
 
 //mongoose hook to encrypt password before saving
