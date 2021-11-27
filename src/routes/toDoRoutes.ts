@@ -55,6 +55,7 @@ router.post(
   }
 );
 
+//route to get all not trashed todos
 router.get(
   "/getAllToDos",
   validateToken,
@@ -63,6 +64,7 @@ router.get(
     try {
       const userQuery = {
         userID: requestedListOwner,
+        trashed: false,
       };
 
       //attempt to find user in database
