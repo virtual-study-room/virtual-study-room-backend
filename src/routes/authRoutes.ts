@@ -42,7 +42,15 @@ router.post("/register", async (req: Request, res: Response) => {
   const newUser = new User({
     username: newUserProfile.username,
     password: userInfo.password,
+    phone: req.body.phone,
   });
+
+  if(newUser.phone && newUser.phone.length != 12 && newUser.phone.substring(0,1) != "+1"){
+    res
+    .status(401)
+    .send("Invalid phone number format")
+    return
+  }
 
   await newUser.save((err, user) => {
     if (!err) {
