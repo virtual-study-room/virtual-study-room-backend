@@ -17,6 +17,8 @@ const authRoutes = require("./routes/authRoutes");
 app.use("/", authRoutes);
 const toDoRoutes = require("./routes/toDoRoutes");
 app.use("/", toDoRoutes);
+const photoRoutes = require("./routes/photoRoutes");
+app.use("/", photoRoutes);
 
 //default route to check server status
 app.get("/", (req: Request, res: Response) => {
