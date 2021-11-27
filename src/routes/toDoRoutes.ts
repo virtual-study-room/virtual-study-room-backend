@@ -44,12 +44,9 @@ router.post(
       } else {
         await newList.save();
 
-        res
-          .status(200)
-          .send({
-            message:
-              "Successfully added a to-do list for " + newToDoList.userID,
-          });
+        res.status(200).send({
+          message: "Successfully added a to-do list for " + newToDoList.userID,
+        });
       }
     } catch (error: any) {
       console.error(error);
@@ -71,14 +68,8 @@ router.get(
       //attempt to find user in database
       const ListOwner = await ToDo.find(userQuery);
 
-      //if the user exists, send its info back in response. If not, throw error saying user could not be found.
-      if (ListOwner.length === 0) {
-        res
-          .status(404)
-          .send("Error: Could not find requested user: " + userQuery.userID);
-      } else {
-        res.status(200).send({ toDos: ListOwner });
-      }
+      //get all lists associated with the user
+      res.status(200).send({ toDos: ListOwner });
     } catch (error: any) {
       console.error(error);
       res.status(400).send(error.message);
@@ -167,11 +158,9 @@ router.post(
         } else {
           pulledList.items = requestedList.items;
           await pulledList.save();
-          res
-            .status(200)
-            .send({
-              message: "Successfully updated to do list for: " + req.username,
-            });
+          res.status(200).send({
+            message: "Successfully updated to do list for: " + req.username,
+          });
         }
       }
     } catch (error: any) {
@@ -220,26 +209,22 @@ router.delete(
           if (pulledList.trashed === false) {
             pulledList.trashed = true;
             await pulledList.save();
-            res
-              .status(200)
-              .send({
-                message:
-                  "Successfully put " +
-                  pulledList.title +
-                  " in the trash can for " +
-                  req.username,
-              });
+            res.status(200).send({
+              message:
+                "Successfully put " +
+                pulledList.title +
+                " in the trash can for " +
+                req.username,
+            });
           } else if (pulledList.trashed === true) {
             await pulledList.delete();
-            res
-              .status(200)
-              .send({
-                message:
-                  "Successfully trashed " +
-                  pulledList.title +
-                  " for " +
-                  req.username,
-              });
+            res.status(200).send({
+              message:
+                "Successfully trashed " +
+                pulledList.title +
+                " for " +
+                req.username,
+            });
           }
         }
       }
@@ -288,11 +273,9 @@ router.post(
         } else {
           pulledList.trashed = false;
           await pulledList.save();
-          res
-            .status(200)
-            .send({
-              message: "Successfully restored to do list for: " + req.username,
-            });
+          res.status(200).send({
+            message: "Successfully restored to do list for: " + req.username,
+          });
         }
       }
     } catch (error: any) {
