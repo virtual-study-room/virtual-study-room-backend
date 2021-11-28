@@ -8,6 +8,8 @@ const app: Application = express();
 
 //parse body of requests as json
 app.use(express.json());
+//enable cors
+app.use(cors());
 
 //load in our dotenv
 dotenv.config();
