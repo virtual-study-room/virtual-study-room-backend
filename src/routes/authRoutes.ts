@@ -42,7 +42,15 @@ router.post("/register", async (req: Request, res: Response) => {
   const newUser = new User({
     username: newUserProfile.username,
     password: userInfo.password,
+    phone: req.body.phone,
   });
+
+  if(newUser.phone && newUser.phone.length != 12 && newUser.phone.substring(0,1) != "+1"){
+    res
+    .status(401)
+    .send("Invalid phone number format")
+    return
+  }
 
   await newUser.save((err, user) => {
     if (!err) {
@@ -142,7 +150,14 @@ router.post(
     const updatedUserProfile: UserInfoType = {
       username: userInfo.username,
       bio: userInfo.bio,
+      phone: userInfo.phone,
     };
+    if(userInfo.phone && userInfo.phone.length != 12 && userInfo.phone.substring(0,1) != "+1"){
+      res
+      .status(401)
+      .send("Invalid phone number format")
+      return
+    }
     try {
       const userQuery = {
         username: updatedUserProfile.username,
@@ -151,6 +166,7 @@ router.post(
       if (oldUser) {
         //await User.updateOne(userQuery, { bio: updatedUserProfile.bio });
         oldUser.bio = updatedUserProfile.bio;
+        oldUser.phone = updatedUserProfile.phone;
         await oldUser.save();
         res
           .status(200)
