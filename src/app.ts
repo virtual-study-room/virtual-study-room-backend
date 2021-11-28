@@ -4,13 +4,10 @@ const cors = require("cors");
 import * as dotenv from "dotenv";
 const port = process.env.PORT || 8080;
 import { Application, Request, Response } from "express";
-import { validateToken } from "./auth/jwt-auth";
 const app: Application = express();
 
 //parse body of requests as json
 app.use(express.json());
-//enable cors
-app.use(cors());
 
 //load in our dotenv
 dotenv.config();
