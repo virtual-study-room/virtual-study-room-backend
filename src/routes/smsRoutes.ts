@@ -1,20 +1,14 @@
-const twilioNumber = String(process.env.TWILIO_NUMBER);
 import { Router, Request, Response } from "express";
 import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
 import { User } from "../models/User";
-import { Twilio } from "twilio";
 const express = require("express");
-
+import { client, twilioNumber } from "../app";
 const router: Router = express.Router();
 
 interface TimerBody {
   breakMinutes: number;
 }
-let accountSID = process.env.TWILIO_ACCOUNT_SID;
-let authToken = process.env.TWILIO_AUTH_TOKEN;
-if (!accountSID) accountSID = "";
-if (!authToken) authToken = "";
-const client = new Twilio(accountSID, authToken);
+
 router.post(
   "/setBreakTimer",
   validateToken,

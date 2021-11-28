@@ -5,7 +5,7 @@ import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { UserInfoType } from "../models/User";
-import { Twilio } from "twilio";
+import { client, twilioNumber } from "../app";
 import {
   AuthorizedRequest,
   validateToken,
@@ -15,20 +15,6 @@ import {
 interface AuthRequestType {
   username: string;
   password: string;
-}
-
-let accountSID = process.env.TWILIO_ACCOUNT_SID;
-let authToken = process.env.TWILIO_AUTH_TOKEN;
-if (!accountSID) accountSID = "";
-if (!authToken) authToken = "";
-const client = new Twilio(accountSID, authToken);
-const twilioNumber = String(process.env.TWILIO_NUMBER);
-async function sendRegisterPhoneMsg(phone: string, user: string) {
-  await client.messages.create({
-    body: `virtual-study-room: ${user}, you have successfully linked your phone number to your account!`,
-    from: twilioNumber,
-    to: phone,
-  });
 }
 
 router.post("/isValidToken", (req: Request, res: Response) => {
@@ -72,7 +58,11 @@ router.post("/register", async (req: Request, res: Response) => {
     if (!err) {
       //send phone number if exists
       if (newUser.phone) {
-        await sendRegisterPhoneMsg(newUser.phone, newUser.username);
+        await client.messages.create({
+          body: `virtual-study-room: ${user}, you have successfully linked your phone number to your account!`,
+          from: twilioNumber,
+          to: newUser.phone,
+        });
       }
       res.status(200).send({
         message: "Successfully registered: " + newUserProfile.username,
