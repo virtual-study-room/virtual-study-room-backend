@@ -5,7 +5,7 @@ import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { User } from "../models/User";
 import { UserInfoType } from "../models/User";
-
+import { Twilio } from "twilio";
 import {
   AuthorizedRequest,
   validateToken,
@@ -15,6 +15,20 @@ import {
 interface AuthRequestType {
   username: string;
   password: string;
+}
+
+let accountSID = process.env.TWILIO_ACCOUNT_SID;
+let authToken = process.env.TWILIO_AUTH_TOKEN;
+if (!accountSID) accountSID = "";
+if (!authToken) authToken = "";
+const client = new Twilio(accountSID, authToken);
+const twilioNumber = String(process.env.TWILIO_NUMBER);
+async function sendRegisterPhoneMsg(phone: string, user: string) {
+  await client.messages.create({
+    body: `virtual-study-room: ${user}, you have successfully linked your phone number to your account!`,
+    from: twilioNumber,
+    to: phone,
+  });
 }
 
 router.post("/isValidToken", (req: Request, res: Response) => {
@@ -45,15 +59,21 @@ router.post("/register", async (req: Request, res: Response) => {
     phone: req.body.phone,
   });
 
-  if(newUser.phone && newUser.phone.length != 12 && newUser.phone.substring(0,1) != "+1"){
-    res
-    .status(401)
-    .send("Invalid phone number format")
-    return
+  if (
+    newUser.phone &&
+    newUser.phone.length != 12 &&
+    newUser.phone.substring(0, 1) != "+1"
+  ) {
+    res.status(401).send("Invalid phone number format");
+    return;
   }
 
-  await newUser.save((err, user) => {
+  await newUser.save(async (err, user) => {
     if (!err) {
+      //send phone number if exists
+      if (newUser.phone) {
+        await sendRegisterPhoneMsg(newUser.phone, newUser.username);
+      }
       res.status(200).send({
         message: "Successfully registered: " + newUserProfile.username,
       });
@@ -140,11 +160,9 @@ router.post(
   validateToken,
   async (req: AuthorizedRequest, res: Response) => {
     const userInfo: UserInfoType = req.body;
-    if(!req.username){
-      res
-      .status(400)
-      .send("Wrong authorization")
-      return
+    if (!req.username) {
+      res.status(400).send("Wrong authorization");
+      return;
     } //type safe, preventing it from being undefined
     userInfo.username = req.username;
     const updatedUserProfile: UserInfoType = {
@@ -152,11 +170,13 @@ router.post(
       bio: userInfo.bio,
       phone: userInfo.phone,
     };
-    if(userInfo.phone && userInfo.phone.length != 12 && userInfo.phone.substring(0,1) != "+1"){
-      res
-      .status(401)
-      .send("Invalid phone number format")
-      return
+    if (
+      userInfo.phone &&
+      userInfo.phone.length != 12 &&
+      userInfo.phone.substring(0, 1) != "+1"
+    ) {
+      res.status(401).send("Invalid phone number format");
+      return;
     }
     try {
       const userQuery = {
@@ -168,11 +188,10 @@ router.post(
         oldUser.bio = updatedUserProfile.bio;
         oldUser.phone = updatedUserProfile.phone;
         await oldUser.save();
-        res
-          .status(200)
-          .send({message:
-            "Successfully updated user info of: " + updatedUserProfile.username}
-          );
+        res.status(200).send({
+          message:
+            "Successfully updated user info of: " + updatedUserProfile.username,
+        });
       } else {
         res
           .status(404)
@@ -202,9 +221,9 @@ router.delete(
       const userInfo = await User.findOne(userQuery);
       if (userInfo) {
         await userInfo.delete();
-        res
-          .status(200)
-          .send({message:"Successfully deleted user info of: " + userQuery.username});
+        res.status(200).send({
+          message: "Successfully deleted user info of: " + userQuery.username,
+        });
       } else {
         res
           .status(404)
