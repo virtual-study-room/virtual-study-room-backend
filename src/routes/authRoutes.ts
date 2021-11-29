@@ -59,7 +59,7 @@ router.post("/register", async (req: Request, res: Response) => {
       //send phone number if exists
       if (newUser.phone) {
         await client.messages.create({
-          body: `virtual-study-room: ${user}, you have successfully linked your phone number to your account!`,
+          body: `virtual-study-room: ${user.username}, you have successfully linked your phone number to your account!`,
           from: twilioNumber,
           to: newUser.phone,
         });
