@@ -6,7 +6,7 @@ import { client, twilioNumber } from "../app";
 const router: Router = express.Router();
 
 interface TimerBody {
-  breakMinutes?: number;
+  minutes?: number;
 }
 
 router.post(
@@ -24,7 +24,7 @@ router.post(
       res.status(406).send("Need phone to send message to.");
     }
     const sendMsg = await client.messages.create({
-      body: `virtual-study-room: ${user}, you have scheduled a break for ${msgRequestBody.breakMinutes} minutes. You can get back to work later!`,
+      body: `virtual-study-room: ${user}, you have scheduled a break for ${msgRequestBody.minutes} minutes. You can get back to work later!`,
       from: twilioNumber,
       to: receivingNumber,
     });
@@ -78,7 +78,7 @@ router.post(
     }
     const msgRequestBody: TimerBody = req.body;
     const sendMsg = await client.messages.create({
-      body: `virtual-study-room: ${user}, you have set a timer to work for ${msgRequestBody.breakMinutes} minutes. Grind time starts now!`,
+      body: `virtual-study-room: ${user}, you have set a timer to work for ${msgRequestBody.minutes} minutes. Grind time starts now!`,
       from: twilioNumber,
       to: receivingNumber,
     });
