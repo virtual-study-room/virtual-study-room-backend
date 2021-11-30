@@ -7,12 +7,14 @@ export interface UserType extends Document {
   username: string;
   bio?: string;
   phone?: string;
+  login?: Date;
 }
 
 export interface UserInfoType {
   username: string;
   bio?: string;
   phone?: string;
+  login?: Date;
 }
 
 //mongoose's definition of our user with the same shape as our interface
@@ -21,6 +23,7 @@ const UserSchema: Schema = new Schema({
   bio: { type: String, required: false },
   password: { type: String, required: true },
   phone : {type: String, required: false},
+  login : {type: String, required: false},
 });
 
 //mongoose hook to encrypt password before saving

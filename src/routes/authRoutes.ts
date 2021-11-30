@@ -43,6 +43,7 @@ router.post("/register", async (req: Request, res: Response) => {
     username: newUserProfile.username,
     password: userInfo.password,
     phone: req.body.phone,
+    login: new Date(),
   });
 
   if (
@@ -96,6 +97,8 @@ router.post("/login", async (req: Request, res: Response) => {
 
     //generate JWT token if the password is valid
     if (correctPassword) {
+      userInfo.login = new Date();
+      await userInfo.save();
       const payload = { username: userInfo.get("username") };
       const options = { expiresIn: "2d" };
       const token = jwt.sign(payload, process.env.JWT_SECRET, options);
