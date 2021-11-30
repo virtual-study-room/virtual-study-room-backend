@@ -58,6 +58,24 @@ router.post("/addPhoto", validateToken, async (req: AuthorizedRequest, res: Resp
     }
 });
 
+router.post("/getPhoto", validateToken, async (req: AuthorizedRequest, res: Response) => {
+    //handle db not being initialized yet
+    const Photos = req.username;
+    try {
+      const userQuery = {
+        userID: Photos,
+      }
+
+      //attempt to find user in database
+      const PhotosList = await Photo.find(userQuery);
+
+      //get all lists associated with the user
+      res.status(200).send({ Photo: PhotosList });
+    } catch (error: any) {
+      console.error(error);
+      res.status(400).send(error.message);
+    }
+});
 
 
 

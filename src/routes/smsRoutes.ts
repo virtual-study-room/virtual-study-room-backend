@@ -6,7 +6,7 @@ import { client, twilioNumber } from "../app";
 const router: Router = express.Router();
 
 interface TimerBody {
-  breakMinutes: number;
+  breakMinutes?: number;
 }
 
 router.post(
