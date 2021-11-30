@@ -8,7 +8,7 @@ import { AuthorizedRequest, validateToken } from "../auth/jwt-auth";
 router.post("/addPhoto", validateToken, async (req: AuthorizedRequest, res: Response) => {
     //handle db not being initialized yet
     const Photos: PhotoList = req.body;
-    if(Photos.photos && Photos.photos.length > 5){
+    if(Photos.photos && Photos.photos.length > 9){
         res
         .status(400)
         .send("Too many photo strings being sent")
