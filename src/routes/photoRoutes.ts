@@ -67,10 +67,10 @@ router.post("/getPhoto", validateToken, async (req: AuthorizedRequest, res: Resp
       }
 
       //attempt to find user in database
-      const PhotosList = await Photo.find(userQuery);
+      const PhotosList = await Photo.findOne(userQuery);
 
       //get all lists associated with the user
-      res.status(200).send({ Photo: PhotosList });
+      res.status(200).send({ PhotosList });
     } catch (error: any) {
       console.error(error);
       res.status(400).send(error.message);
