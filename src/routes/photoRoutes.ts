@@ -58,7 +58,7 @@ router.post("/addPhoto", validateToken, async (req: AuthorizedRequest, res: Resp
     }
 });
 
-router.post("/getPhoto", validateToken, async (req: AuthorizedRequest, res: Response) => {
+router.get("/getPhoto", validateToken, async (req: AuthorizedRequest, res: Response) => {
     //handle db not being initialized yet
     const Photos = req.username;
     try {
