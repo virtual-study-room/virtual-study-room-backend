@@ -17,16 +17,33 @@ interface AuthRequestType {
   password: string;
 }
 
-router.post("/isValidToken", (req: Request, res: Response) => {
+router.post("/isValidToken", async (req: Request, res: Response) => {
   const userToken: string = req.body.authToken;
   const tokenUser = isValidToken(userToken);
-  tokenUser
-    ? res.status(200).send({
-        username: tokenUser,
-      })
-    : res.status(400).send({
+  if (!tokenUser) {
+    res.status(400).send({
+      message: "Invalid Token",
+    });
+    return;
+  } else {
+    //get old profile info
+    const userInfo = await User.findOne({
+      username: tokenUser,
+    });
+    if (!userInfo) {
+      res.status(400).send({
         message: "Invalid Token",
       });
+      return;
+    }
+    const prevLogin: Date = userInfo.get("login");
+    userInfo.login = new Date();
+    await userInfo.save();
+    res.status(200).send({
+      username: tokenUser,
+      prevLogin: prevLogin,
+    });
+  }
 });
 
 //route that tries to add a user's profile to the database if it doesn't exist yet
@@ -97,6 +114,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     //generate JWT token if the password is valid
     if (correctPassword) {
+      const prevLogin: Date = userInfo.get("login");
       userInfo.login = new Date();
       await userInfo.save();
       const payload = { username: userInfo.get("username") };
@@ -104,6 +122,7 @@ router.post("/login", async (req: Request, res: Response) => {
       const token = jwt.sign(payload, process.env.JWT_SECRET, options);
       res.status(200).send({
         token: token,
+        prevLogin: prevLogin,
       });
       return;
     } else {

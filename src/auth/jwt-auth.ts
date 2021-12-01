@@ -40,13 +40,14 @@ export function validateToken(
 }
 
 export function isValidToken(token: string) {
-  if (!process.env.JWT_SECRET) return false;
+  if (!process.env.JWT_SECRET) return "";
   try {
     const result = jwt.verify(token, process.env.JWT_SECRET);
     if (typeof result == "string") {
       return "";
     }
-    return result.username;
+    const res: string = result.username;
+    return res;
   } catch (error: any) {
     console.error(error);
     return "";
